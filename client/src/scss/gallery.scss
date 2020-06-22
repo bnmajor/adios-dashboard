@@ -1,56 +1,154 @@
-div.controls button {
-  margin: auto;
-  display: block;
-  outline: 0;
-  span {
-    font-size: 20px;
-  }
-}
-
 // Used to align the "Drop here" icon
 .vertical-center {
   display: flex;
   align-items: center;
 }
 
-.v-card * {
-  height: 100%;
+// Make sure all plots fill their div
+.plot {
+  min-height: 100%;
+  min-width: 100%;
+}
+
+.text-xs-center {
+  justify-content: center;
+  display: flex;
+}
+
+.text-xs-end {
+  justify-content: flex-end;
+  display: flex;
+}
+
+// Make sure main content and plot divs are
+// as large as possible
+.v-card__text {
+  height: inherit;
+  padding: 0;
+}
+
+.main-content .container{
+  padding: 0;
+  .row {
+    margin: 0;
+    .col {
+      padding: 0;
+      .v-card {
+        height: 100%;
+      }
+    }
+  }
 }
 
 // Make text smaller in the data browser.
-table.v-table tbody td {
-  font-size: 0.5rem;
+.v-data-table tbody td {
+  font-size: 0.8rem;
 }
 
-// Scroll horizontal scrollbar for gallery grid.
-.main-content {
-  overflow-x: scroll;
+.splitpanes__pane .col {
+  display: flex;
+  flex-direction: column;
+  max-height: -webkit-fill-available;
 }
 
 // Girder browser takes up 80% of the left column
 // and shows a scrollbar when necessary.
-.girder-data-table {
-  height: 80vh;
+.girder-data-browser-snippet {
+  flex-grow: 1;
+  max-height: calc(100% - 175px);
   overflow: auto;
 }
 .girder-placeholder {
-  height: 80vh;
+  flex-grow: 1;
+  max-height: calc(100% - 175px);
 }
 
 // Playback controls take up 20% of the left column.
 .playback-controls {
-  height: 20vh;
+  display: grid;
+  max-height: 200px;
+  min-height: 175px;
+  padding: 10px 5px;
+  .row {
+    justify-content: space-around;
+    margin: 0;
+    padding: 1%;
+    .col {
+      padding: 0;
+    }
+    .v-input__control {
+      padding-top: 10px;
+    }
+  }
 }
 
 // Hide disk space indicator in girder data table.
 .girder-data-table {
-  .v-datatable {
+  .v-data-table__wrapper {
     tbody {
       tr {
-        td.secondary--text {
+        td.text-right {
           display: none;
         }
       }
     }
   }
+}
+
+// Align breadcrumbs
+.v-breadcrumbs {
+  display: flex;
+  align-items: baseline;
+}
+
+// Prevent default rotation of clear icon
+.v-select.v-select--is-menu-active
+  .v-input__icon--append
+  .v-icon {
+  transform: rotate(0);
+}
+
+// Align Rows per page footer
+.v-data-footer {
+  justify-content: center;
+}
+
+// Make sure toolbar doesn't cover plot title
+// when visible
+.show-toolbar {
+  .modebar-container {
+    display: flex;
+    height: auto;
+    div {
+      height: auto;
+    }
+  }
+  .modebar {
+    top: 20px !important;
+  }
+}
+
+.hide-toolbar {
+  .modebar-container {
+    display: none;
+  }
+}
+
+.hide-search {
+  display: none;
+}
+
+// Create border on data browser panel
+.splitpanes--vertical > .splitpanes__splitter {
+  min-width: 3px;
+  background: linear-gradient(90deg, #ccc, #a5a4a4);
+}
+
+// Resize plot labels when plots resize
+.gtitle, .ytitle, .xtitle {
+  font-size: inherit !important;
+}
+
+.v-text-field__details {
+  display: none;
 }

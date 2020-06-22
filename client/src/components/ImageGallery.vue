@@ -1,26 +1,42 @@
-<template lang="pug">
-v-card.vertical-center(height="100%"
-                       v-on:drop="loadGallery($event)"
-                       v-on:dragover="preventDefault($event)")
-  v-card-text.text-xs-center
-    div(v-if="itemId")
-      v-img(v-for="image in loadedImages"
-            v-show="image.timestep == step"
-            :key="image.timestep"
-            :src="image.src"
-            v-on:load="imageLoaded()"
-            contain=true)
-    v-icon(v-if="!itemId" large) input
+<template>
+<v-card vertical-center
+        v-on:drop="loadGallery($event)"
+        v-on:dragover="preventDefault($event)">
+  <v-card-text v-bind:class="[!json ? 'text-xs-end' : 'text-xs-center']"
+               @contextmenu.prevent="fetchMovie">
+    <div v-if="itemId"
+         ref="plotly"
+         class="plot"/>
+    <img v-if="itemId && !json"
+        ref="img"
+        :src="image.src"
+        class="plot" />
+    <v-icon v-if="!itemId" large> input </v-icon>
+  </v-card-text>
+</v-card>
 </template>
 
 <script>
+import Plotly from 'plotly.js-basic-dist-min';
+import { isNil, isEqual, isEmpty } from 'lodash';
+
 export default {
+  name: "plotly",
+
   props: {
     currentTimeStep: {
       type: Number,
       required: true
     },
     maxTimeStep: {
+      type: Number,
+      required: true
+    },
+    numrows: {
+      type: Number,
+      required: true
+    },
+    numcols: {
       type: Number,
       required: true
     },
@@ -35,7 +51,9 @@ export default {
       loadedImages: [],
       pendingImages: 0,
       rows: [],
-      step: 0,
+      step: 1,
+      json: true,
+      image: null,
     };
   },
 
@@ -59,8 +77,10 @@ export default {
     currentTimeStep: {
       immediate: true,
       handler () {
-        this.step = this.currentTimeStep;
+        if (this.currentTimeStep >= 1)
+          this.step = this.currentTimeStep;
         this.preCacheImages();
+        this.react();
       }
     },
     itemId: {
@@ -76,16 +96,16 @@ export default {
         this.loadImageUrls();
       }
     },
-
-    pendingImages: {
+    numrows: {
       immediate: true,
-      handler () {
-        if (!this.itemId) {
-          return;
-        }
-        if (this.pendingImages == 0) {
-          this.$parent.$parent.$emit("gallery-ready");
-        }
+      handler() {
+        this.react();
+      }
+    },
+    numcols: {
+      immediate: true,
+      handler() {
+        this.react();
       }
     },
   },
@@ -101,29 +121,43 @@ export default {
       }
 
       const endpoint = `item/${this.itemId}/files?limit=0`;
-      const response = await this.girderRest.get(endpoint);
+      const response = await this.callEndpoint(endpoint);
 
-      this.rows = response.data.map(function(val) {
-        return {
-          img: this.girderRest.apiRoot + "/file/" + val._id + "/download?contentDisposition=inline",
-          name: val.name
-        };
-      }, this);
+      this.rows = await Promise.all(response.map(async function(val) {
+        let info =  await this.callEndpoint(`file/${val._id}`);
+        let name = info.name.split('.');
+        if (name[1] == 'json') {
+          let img = await this.callEndpoint(
+            `file/${val._id}/download?contentDisposition=inline`);
+          return {'img': img, 'step': parseInt(name[0], 10), 'ext': name[1]};
+        } else {
+          return {
+            'img': this.girderRest.apiRoot + "/file/" + val._id + "/download?contentDisposition=inline",
+            'step': parseInt(name[0], 10),
+            'ext': name[1]
+          }
+        }
+      }, this));
 
       this.preCacheImages();
 
       if (this.initialLoad) {
         // Not sure why this level of parent chaining is required
         // to get the app to be able to hear the event.
-        this.$parent.$parent.$emit("data-loaded", this.rows.length, this.itemId);
+        this.$parent.$parent.$parent.$parent.$emit("data-loaded", this.rows.length, this.itemId);
         this.initialLoad = false;
       }
+    },
+
+    callEndpoint: async function (endpoint) {
+      const { data } = await this.girderRest.get(endpoint);
+      return data;
     },
 
     loadGallery: function (event) {
       event.preventDefault();
       var items = JSON.parse(event.dataTransfer.getData('application/x-girder-items'));
-      this.itemId = items[0];
+      this.itemId = items[0]._id;
     },
 
     preCacheImages: function () {
@@ -131,9 +165,18 @@ export default {
       if (this.rows === null || this.rows.constructor !== Array || this.rows.length < 1) {
         return;
       }
+      // Find index of current time step
+      let idx = this.rows.findIndex(file => file.step === this.step);
+      if (idx < 0) {
+        let prevStep = this.step - 1;
+        while (prevStep > 0 && idx < 0) {
+          idx = this.rows.findIndex(file => file.step === prevStep);
+          prevStep -= 1;
+        }
+      }
       // Load the current image and the next two.
       var any_images_loaded = false;
-      for (var i = this.step; i < this.step + 3; i++) {
+      for (var i = idx + 1; i < idx + 3; i++) {
         if (i > this.maxTimeStep || i > this.rows.length) {
           break;
         }
@@ -149,8 +192,23 @@ export default {
         if (load_image) {
           // Javascript arrays are 0-indexed but our simulation timesteps are 1-indexed.
           any_images_loaded = true;
-          this.pendingImages += 1;
-          this.loadedImages.push({timestep: i, src: this.rows[i - 1].img});
+          this.pendingImages = 1;
+          const img = this.rows[i - 1].img;
+          const ext = this.rows[i - 1].ext;
+          const step = this.rows[i - 1].step;
+          if (ext == 'json') {
+            this.loadedImages.push({
+              timestep: step,
+              data: img.data,
+              layout: img.layout,
+              ext: ext,
+            });
+          } else {
+            this.loadedImages.push({timestep: step, src: img, ext: ext});
+          }
+          if (this.loadedImages.length == 1) {
+            this.react();
+          }
         }
       }
 
@@ -161,12 +219,31 @@ export default {
 
       // Report this gallery as ready if we didn't need to load any new images.
       if (!any_images_loaded && this.pendingImages == 0) {
-        this.$parent.$parent.$emit("gallery-ready");
+        this.$parent.$parent.$parent.$parent.$emit("gallery-ready");
       }
     },
 
-    imageLoaded: function () {
-      this.pendingImages -= 1;
+    react: function () {
+      let nextImage = this.loadedImages.find(img => img.timestep == this.step);
+      if (isNil(nextImage) && this.loadedImages.length == 1)
+        nextImage = this.loadedImages[0];
+      if (!isNil(nextImage)) {
+        if (isEqual(nextImage.ext, 'json')) {
+          Plotly.react(this.$refs.plotly, nextImage.data, nextImage.layout, {autosize: true});
+          this.json = true;
+        } else {
+          this.json = false;
+          this.image = nextImage;
+        }
+      }
+      this.$parent.$parent.$parent.$parent.$emit("gallery-ready");
+    },
+
+    async fetchMovie(e) {
+      if (this.json)
+        return;
+      const response = await this.callEndpoint(`item/${this.itemId}`);
+      this.$parent.$parent.$parent.$parent.$emit("param-selected", this.itemId, response.name, e);
     },
   },
 };
