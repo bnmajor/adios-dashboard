@@ -60,7 +60,8 @@ export default {
       const loaded = this.loadedTimeStepData.map((data) => data.timestep);
       let start = this.currentTimeStep;
       let end = this.currentTimeStep + this.timeAverage;
-      const range = [...Array(end - start + 1).keys()].map((x) => x + start);
+      let arr_size = Math.max(1, end - start + 1);
+      const range = [...Array(arr_size || 1).keys()].map((x) => x + start);
       return range.every(
         (s) => loaded.includes(s) || !this.availableTimeSteps.includes(s),
       );

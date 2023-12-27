@@ -120,9 +120,11 @@ export default {
       let newMax = -Infinity;
       rootGetters.VIEW_SELECTIONS.forEach((id) => {
         let steps = rootGetters[`${id}/PLOT_AVAILABLE_TIME_STEPS`] || [];
-        let [tsMin, tsMax] = extractRange(steps);
-        newMin = Math.min(newMin, tsMin);
-        newMax = Math.max(newMax, tsMax);
+        if (steps.length) {
+          let [tsMin, tsMax] = extractRange(steps);
+          newMin = Math.min(newMin, tsMin);
+          newMax = Math.max(newMax, tsMax);
+        }
       });
       commit("VIEW_MIN_TIME_STEP_SET", newMin, { root: true });
       commit("VIEW_MAX_TIME_STEP_SET", newMax, { root: true });
