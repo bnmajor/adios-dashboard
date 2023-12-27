@@ -79,7 +79,7 @@ export default {
       run: "VIEWS_RUN_ID",
       simulation: "VIEWS_SIMULATION",
       step: "VIEW_TIME_STEP",
-      initialDataLoaded: "VIEW_INITIAL_LOAD",
+      selectedPlots: "VIEW_SELECTIONS",
     }),
     zoomSync: {
       get() {

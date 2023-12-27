@@ -34,7 +34,7 @@ export default {
     rangeAnnotations: true,
     drawerCollapsed: false,
     stepAnnotations: true,
-    syncAnimation: false,
+    syncAnimation: true,
   },
   getters: {
     UI_AUTO_SAVE_DIALOG(state) {

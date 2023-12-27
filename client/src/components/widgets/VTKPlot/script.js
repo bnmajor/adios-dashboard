@@ -210,7 +210,6 @@ export default {
       setContextMenuItemData: "UI_CONTEXT_MENU_ITEM_DATA_SET",
       setMaxTimeStep: "VIEW_MAX_TIME_STEP_SET",
       setItemId: "VIEW_CURRENT_ITEM_ID_SET",
-      setInitialLoad: "VIEW_INITIAL_LOAD_SET",
       setCurrentItemId: "VIEW_CURRENT_ITEM_ID_SET",
       updateNumReady: "VIEW_NUM_READY_SET",
       setRunId: "VIEWS_RUN_ID_SET",
