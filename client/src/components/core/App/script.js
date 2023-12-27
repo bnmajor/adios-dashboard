@@ -184,6 +184,10 @@ export default {
 
     resetView() {
       this.setPaused(true);
+      this.$refs.plots.forEach((cell) => {
+        cell.loadTemplateGallery({ id: null, zoom: null });
+        cell.clearGallery();
+      });
       this.setCurrentTimeStep(1);
       this.setMaxTimeStep(0);
       this.setColumns(1);
@@ -191,7 +195,6 @@ export default {
       this.setGridSize(1);
       this.dataLoaded = false;
       this.setRunId(null);
-      this.location = null;
     },
 
     autosave() {
@@ -307,7 +310,7 @@ export default {
 
   watch: {
     async location(current, previous) {
-      if (current._modelType !== "folder") {
+      if (!current || current._modelType !== "folder") {
         return;
       }
 
@@ -347,12 +350,7 @@ export default {
       if (size === 0) {
         this.setGridSize(this.numrows * this.numcols);
       } else {
-        if (this.loggedOut && this.$refs.plots) {
-          this.$refs.plots.forEach((cell) => {
-            cell.loadTemplateGallery({ id: null, zoom: null });
-            cell.clearGallery();
-          });
-        } else if (this.$refs.plots && this.loadedFromSaved) {
+        if (this.$refs.plots && this.loadedFromSaved) {
           this.applyView();
         }
       }
