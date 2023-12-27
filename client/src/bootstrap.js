@@ -10,7 +10,7 @@ export function bootstrap() {
   Vue.use(VueMathjax);
 
   let apiRoot = `${window.location}api/v1`;
-  let fastRestUrl = "http://localhost:5000/api/v1";
+  let fastRestUrl = `${window.location}fastapi/v1`;
   let authenticateWithCredentials = true;
 
   let deployment = window.location.hostname.split(".");
