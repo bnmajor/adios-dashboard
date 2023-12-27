@@ -198,6 +198,7 @@ export default {
           this.availableTimeSteps,
         );
         this.plotFetcher.setCurrentTimestep(this.localTimeStep, true);
+        this.react();
       },
     },
   },

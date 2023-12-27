@@ -92,6 +92,7 @@ export default {
       this.localTimeStep = nextAvailableTimeStep(step, this.itemTimeSteps);
       this.plotFetcher.setCurrentTimestep(this.localTimeStep, true);
       this.nextTimeStep = nextAvailableTimeStep(step, this.availableTimeSteps);
+      this.react();
     },
     availableTimeSteps(ats) {
       // Continue displaying the time step closest to the
