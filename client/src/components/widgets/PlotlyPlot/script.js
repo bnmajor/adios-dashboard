@@ -176,6 +176,7 @@ export default {
         }
         if (new_id !== old_id) {
           this.lastLoadedTimeStep = -1;
+          this.plotLabels = {};
         }
       },
     },
