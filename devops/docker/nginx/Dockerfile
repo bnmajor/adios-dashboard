@@ -1,6 +1,6 @@
 FROM node:16 as build
 COPY ./client /client
-RUN cd /client && yarn && yarn build
+RUN cd /client && npm && npm run build
 
 FROM nginx
 COPY ./devops/docker/nginx/nginx.conf /etc/nginx/nginx.conf
