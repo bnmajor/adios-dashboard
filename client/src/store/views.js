@@ -220,11 +220,11 @@ export default {
       dispatch("VIEWS_LOADED", state.autoSavedView);
     },
     VIEWS_LOADED({ commit }, view) {
-      // Make sure that view is registered as a change no matter size
-      commit("VIEWS_GRID_SIZE_SET", 0);
 
       commit("VIEWS_ROWS_SET", parseInt(view.rows));
       commit("VIEWS_COLUMNS_SET", parseInt(view.columns));
+      // Make sure that view is registered as a change no matter size
+      commit("VIEWS_GRID_SIZE_SET", 0);
       commit("VIEWS_ITEMS_SET", view.items);
       commit("VIEWS_PUBLIC_SET", view.public);
       commit("VIEWS_STEP_SET", parseInt(view.step));

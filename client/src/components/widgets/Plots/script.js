@@ -439,7 +439,7 @@ export default {
       this.setMetaData({});
       this.itemId = "";
       this.setInitialLoad(true);
-      this.plotType = PlotType.None;
+      // this.plotType = PlotType.None;
     },
     async setRun() {
       const { data } = await this.girderRest.get(

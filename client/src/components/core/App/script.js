@@ -174,12 +174,10 @@ export default {
       this.$refs.plots.forEach((cell) => {
         const { row, col } = cell;
         const item = this.items[`${row}::${col}`];
-        cell.clearGallery();
         if (item) {
           cell.loadTemplateGallery(item);
         }
       });
-      this.setCurrentTimeStep(this.minTimeStep);
     },
 
     resetView() {
@@ -351,6 +349,16 @@ export default {
         this.setGridSize(this.numrows * this.numcols);
       } else {
         if (this.$refs.plots && this.loadedFromSaved) {
+          this.setPaused(true);
+          this.$refs.plots.forEach((cell) => {
+            cell.loadTemplateGallery({ id: null, zoom: null });
+            cell.clearGallery(false);
+          });
+          // this.setCurrentTimeStep(1);
+          this.setMaxTimeStep(0);
+          this.setGridSize(1);
+          // this.dataLoaded = false;
+          this.setRunId(null);
           this.applyView();
         }
       }
